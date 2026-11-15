@@ -1,3 +1,6 @@
+/*
+File provided by CS 3050 class, this is the spec for the assignment
+*/
 #ifndef A4_API_H
 #define A4_API_H
 
