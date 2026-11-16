@@ -38,20 +38,19 @@ int qselect_easy_test_impl(int test_no, int * n_p, int k) {
     printf(" -> ");
     print_pt(curr_point);
     
-    free_test(test_pts);
-    
     int test_passed = 1;
-
+    
     for (int i=k-1; i>=0; i--) {
         test_passed &= compare_points(test_pts[i], curr_point, 0) == LT;
     }
-
+        
     enum comp out;
     for (int i=k; i<*n_p; i++) {
         out = compare_points(test_pts[i], curr_point, 0);
-        test_passed &= out == EQ || out == GT;
+        test_passed &= (out == EQ || out == GT);
     }
 
+    free_test(test_pts);
     return test_passed;
 }
 

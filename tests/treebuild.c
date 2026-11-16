@@ -41,23 +41,23 @@ int _check_tree(KDTree * tree, int test_no, Point * test_pts) {
             1 , 4 , 5 , 6 , 0 , 
             9 , 8 , 2 , 14, 3
         };
-        size_t min_i_answer_key[] = {
-            12, 7 , 11, 1 , 10,
-            1 , 4 , 0 , 6 , 0 , 
-            9 , 0 , 2 , 2 , 3
+        size_t max_i_answer_key[] = {
+            12, 12, 11, 13, 10,
+            10, 4 , 14, 6 , 9 , 
+            9 , 14, 2 , 14, 3
         };
 
         printf("actual (index, min_index) - expected:\n");
         for (size_t i=0; i<n; i++) {
             printf("(%2lu, %2lu) - (%2lu, %2lu)\n", 
                 flattened_tree[i]->index,
-                flattened_tree[i]->min_index,
+                flattened_tree[i]->max_index,
                 i_answer_key[i],
-                min_i_answer_key[i]
+                max_i_answer_key[i]
             );
 
             result &= (i_answer_key[i] == flattened_tree[i]->index);
-            result &= (min_i_answer_key[i] == flattened_tree[i]->min_index);
+            result &= (max_i_answer_key[i] == flattened_tree[i]->max_index);
 
         }
         printf("\n\n");

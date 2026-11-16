@@ -107,16 +107,87 @@ void kd_build_impl(KDTree * tree, MetaPoint * points, size_t n, unsigned int dim
     kd_build_impl(tree, points+median_i+1, n-median_i-1, next_dim);
 }
 
-// /* Return original indices j >= min_index inside the closed cube
-//    centered at center with half-width r. Write each index once into
-//    indices, which has room for n entries. Output order is arbitrary. */
-// size_t kd_cube_query(
-//     const KDTree *tree, 
-//     Point center, double r,
-//     size_t min_index, size_t *indices
-// ) {
+size_t kd_cube_query_impl(
+    KDNode * node, Point * cube_min_p, Point * cube_max_p,
+    size_t min_index, size_t *indices, size_t * indices_i_p,
+    unsigned int dim
+);
+
+/* operates in O(log(n) + k) time, where k is the number of retrieved keys */
+size_t kd_cube_query(
+    const KDTree *tree, 
+    Point center, 
+    double r,
+    size_t min_index, 
+    size_t *indices
+) {
+    if (!tree || !tree->root || !indices || min_index >= tree->size) {
+        return 0;
+    }
+
+    // reduce memory use by building these once then using addresses
+    Point cube_min = pt_build(center.x - r, center.y - r, center.z - r);
+    Point * cube_min_p = &cube_min;
+
+    Point cube_max = pt_build(center.x + r, center.y + r, center.z + r);
+    Point * cube_max_p = &cube_max;
+
+    /* keeps a record of where the pointer to indices lies so no 
+       overwrites occur */
+    size_t indices_i = 0;
+    size_t * indices_i_p = &indices_i;
     
-// }
+    return kd_cube_query_impl(
+        tree->root, cube_min_p, cube_max_p, 
+        min_index, indices, indices_i_p, 0
+    );
+}
+
+size_t kd_cube_query_impl(
+    KDNode * node, Point * cube_min_p, Point * cube_max_p,
+    size_t min_index, size_t *indices, size_t * indices_i_p,
+    unsigned int dim
+) {
+    if (node->max_index < min_index) {return 0;}
+
+    enum comp min_curr_comp = compare_points(
+        *cube_min_p, node->data, dim
+    );
+    enum comp curr_max_comp = compare_points(
+        node->data, *cube_max_p, dim
+    );
+
+    /* if point is outside query range, then, because of how duplicates are
+       handled, there's always a need to check all the way down the subtrees 
+       nearest to the edges of the query cube */
+    if (min_curr_comp == GT) {
+        return kd_cube_query_impl(
+            node->right, cube_min_p, cube_max_p,
+            min_index, indices, indices_i_p, dim+1
+        );
+    } else if (curr_max_comp == GT) {
+        return kd_cube_query_impl(
+            node->left, cube_min_p, cube_max_p,
+            min_index, indices, indices_i_p, dim+1
+        );
+    }
+
+    /* this endpoint means point falls in range and both subtrees need to be 
+       searched */
+
+    if (node->index > min_index) {
+        indices[*indices_i_p] = node->index;
+        indices_i_p++;
+    }
+
+    return 1 + kd_cube_query_impl(
+        node->left, cube_min_p, cube_max_p, 
+        min_index, indices, indices_i_p, dim+1
+    ) + kd_cube_query_impl(
+        node->right, cube_min_p, cube_max_p, 
+        min_index, indices, indices_i_p, dim+1
+    );
+}
 
 void kd_free_impl(KDNode *node);
 
@@ -150,8 +221,8 @@ int kd_insert(KDTree * tree, Point pt, size_t index) {
             else {return 0;} // fail
         }
         
-        if (index < currNode->min_index) {
-            currNode->min_index = index;
+        if (index > currNode->max_index) {
+            currNode->max_index = index;
         }
         
         comp_out = compare_points(pt, currNode->data, dim);
@@ -175,7 +246,7 @@ KDNode * kd_node_build(Point pt, size_t index) {
 
     out->data = pt;
     out->index = index;
-    out->min_index = index;
+    out->max_index = index;
 
     out->left = NULL;
     out->right = NULL;

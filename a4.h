@@ -23,7 +23,7 @@ typedef struct _KDNode {
     struct _KDNode * right;
 
     size_t index;
-    size_t min_index;
+    size_t max_index;
 } KDNode;
 
 typedef struct KDTree {
