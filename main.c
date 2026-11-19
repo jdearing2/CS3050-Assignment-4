@@ -28,6 +28,7 @@ int main() {
     test_kd_build(3);
 
     test_kd_cube_query(3);
+    test_kd_cube_query(4);
 
     printf("###    END TEST    ###\n");
 }

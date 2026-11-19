@@ -73,6 +73,28 @@ Point * get_test(int test_no, size_t * n_p) {
         test[14] = pt_build(24,32,17);
 
         return test;
+        
+        /* makes several blocks of points such that many matches exist
+           if only accounting or specific axes, and that the tree is 
+           tall enough that dimensions get checked more than once */
+        case 4:
+        *n_p = 48;
+        test = malloc(sizeof(Point) * *n_p);
+        
+        {
+            size_t i = 0;
+            size_t height = 8;
+            for (size_t j=1; j<=8; j++) {
+                if (j == 5) {height = 4;}
+                for (size_t k=1; k<=height; k++) {
+                    test[i] = pt_build(
+                        (double) j, (double) k, 0);
+                    i++;
+                }
+            }
+        }
+
+        return test;
     }
     
     printf("test_no=%d not found", test_no);

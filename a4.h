@@ -49,7 +49,7 @@ void kd_free(KDTree *tree);
 
 // implementation functions
 
-Point pt_build(float x, float y, float z);
+Point pt_build(double x, double y, double z);
 
 enum comp compare_points(Point pt1, Point pt2, unsigned int dim);
 

@@ -13,7 +13,7 @@ enum comp {FAIL, LT, EQ, GT};
 int kd_insert(KDTree * tree, Point pt, size_t index);
 KDNode * kd_node_build(Point pt, size_t index);
 int is_point_in_rect_prism(Point pt, Point min_vert, Point max_vert);
-Point pt_build(float x, float y, float z);
+Point pt_build(double x, double y, double z);
 enum comp compare_points(Point pt1, Point pt2, unsigned int dim);
 size_t partition_points(
     Point * points, 
@@ -270,7 +270,7 @@ int is_point_in_rect_prism(Point pt, Point min_vert, Point max_vert) {
     );
 }
 
-Point pt_build(float x, float y, float z) {
+Point pt_build(double x, double y, double z) {
     Point pt;
     pt.x = x;
     pt.y = y;

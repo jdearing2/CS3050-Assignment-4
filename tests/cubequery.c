@@ -3,6 +3,11 @@
 CubeQuery * build_test_queries(int test_no, size_t * n_queries);
 void free_test_queries(CubeQuery * test_queries, size_t n_test_queries);
 
+int _verify_cube_query(
+    size_t n, size_t * out_indices, size_t n_found, 
+    size_t * expected_out, size_t expected_n_found
+);
+
 int test_kd_cube_query(int test_no) {
 
     printf("test kd cube query:\n\n");
@@ -18,16 +23,13 @@ int test_kd_cube_query(int test_no) {
 
     test_points = get_test(test_no, &n);
     if (!test_points) {setup_passed = 0; goto cleanup;}
-    
     kd_tree = kd_build(test_points, n);
     if (!kd_tree) {setup_passed = 0; goto cleanup;}
-    
     cube_queries = build_test_queries(test_no, &n_queries);
     if (!cube_queries) {setup_passed = 0; goto cleanup;}
-    
     out_indices = calloc(n, sizeof(size_t));
     if (!out_indices) {setup_passed = 0; goto cleanup;}
-        
+    
     int test_result = 1;
     int trial_result = 1;
     CubeQuery curr;
@@ -44,21 +46,10 @@ int test_kd_cube_query(int test_no) {
 
         printf("trial %lu:\n", i);
 
-        trial_result &= (n_found == curr.expected_n_found);
-        printf(
-            "found %lu out of expected %lu\n", 
-            n_found, curr.expected_n_found
+        trial_result = _verify_cube_query(
+            n, out_indices, n_found, curr.expected_out, 
+            curr.expected_n_found
         );
-
-        for (size_t j=0; j<n; j++) {
-            if (!(out_indices[j] == curr.expected_out[j])) {
-                trial_result = 0;
-                printf(
-                    "mismatch: index %lu has %lu instead of %lu.\n",
-                    j, out_indices[j], curr.expected_out[j]
-                );
-            }
-        }
 
         printf("trial result=%d\n\n", trial_result);
         test_result &= trial_result;
@@ -82,25 +73,58 @@ int test_kd_cube_query(int test_no) {
     return test_result;
 }
 
+int _verify_cube_query(
+    size_t n, size_t * out, size_t n_found, 
+    size_t * expected_out, size_t expected_n_found
+) {
+    int trial_result = (n_found == expected_n_found);
+    printf(
+        "found %lu out of expected %lu\n", 
+        n_found, expected_n_found
+    );
+
+    int found;
+    size_t query;
+    for (size_t i=0; i<expected_n_found; i++) {
+        query = expected_out[i];
+
+        found = 0;
+        for (size_t j=0; j<n; j++) {
+            if (out[j] == query) {
+                found = 1;
+                break;
+            }
+        }
+
+        if (!found) {
+            printf("node with index %lu not found\n", query);
+        }
+        trial_result &= found;
+    }
+
+    return trial_result;
+}
+
 CubeQuery _build_query(
     Point point, double r, size_t min_index, 
     size_t * expected_out, size_t expected_n_found
 );
 
 CubeQuery * build_test_queries(int test_no, size_t * n_queries_p) {
+    size_t n;
+    Point center;
+    double r;
+    size_t min_index;
+    size_t * expected_out;
+    size_t expected_n_found;
+    CubeQuery * queries;
     
     switch (test_no) {
         case 3:
-        size_t n = 15; // total number of points in original structure
-        *n_queries_p = 3;
-        CubeQuery * queries = malloc(sizeof(CubeQuery) * (*n_queries_p));
+        n = 15; // total number of points in original structure
+        *n_queries_p = 4;
+        queries = malloc(sizeof(CubeQuery) * (*n_queries_p));
         if (!queries) {return NULL;}
-        
-        Point center;
-        double r;
-        size_t min_index;
-        size_t * expected_out;
-        size_t expected_n_found;
         
         // Query 0 - no points
         center = pt_build(-1,-1,-1);
@@ -139,7 +163,22 @@ CubeQuery * build_test_queries(int test_no, size_t * n_queries_p) {
             center, r, min_index, expected_out, expected_n_found
         );
         
-        // Query 2 - specific points; should prune branches during search
+        
+        // Query 2 - half points, filtered by index
+        center = pt_build(20,20,20);
+        r = 20;
+        min_index = 8;
+        expected_out = calloc(n, sizeof(size_t));
+        for (size_t i=0; i<n-min_index; i++) {
+            expected_out[i] = i+min_index;
+        }
+
+        expected_n_found = 7;
+        queries[2] = _build_query(
+            center, r, min_index, expected_out, expected_n_found
+        );
+        
+        // Query 3 - specific points; should prune branches during search
         center = pt_build(6,36,34);
         r = 5;
         min_index = 0;
@@ -149,13 +188,44 @@ CubeQuery * build_test_queries(int test_no, size_t * n_queries_p) {
         expected_out[2] = 4;
 
         expected_n_found = 3;
-        queries[2] = _build_query(
+        queries[3] = _build_query(
             center, r, min_index, expected_out, expected_n_found
-        );        return queries;
+        );
+        
+        return queries;
+
+
+        case 4:
+        n = 48; // total number of points in original structure
+        *n_queries_p = 1;
+        queries = malloc(sizeof(CubeQuery) * (*n_queries_p));
+        if (!queries) {return NULL;}
+        center = pt_build(2.5, 2.5, 0);
+        r = 2;
+        min_index = 0;
+        expected_out = calloc(n, sizeof(size_t));
+
+        // bottom left 4x4 of points; I promise I understand this
+        {
+            size_t i=0;
+            for (size_t j=0; j<n; j++) {
+                if (j/4 % 2 == 0 && j<32) {
+                    expected_out[i] = j;
+                    i++;
+                }
+            }
+        }
+
+        expected_n_found = 16;
+        queries[0] = _build_query(
+            center, r, min_index, expected_out, expected_n_found
+        );
+        
+        return queries; 
+
 
         default:
-        *n_queries_p = 0;
-        printf("no set of test queries for test_no=%d\n", test_no);
+        printf("no query found for test_no=%i\n", test_no);
         return NULL;
     }
     
