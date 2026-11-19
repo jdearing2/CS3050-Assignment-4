@@ -1,6 +1,6 @@
 #include "test_utils.h"
 
-Point * get_test(int test_no, int * n_p) {
+Point * get_test(int test_no, size_t * n_p) {
     Point * test;
 
     switch (test_no) {
@@ -14,7 +14,7 @@ Point * get_test(int test_no, int * n_p) {
         test[3].x = 5;
         test[4].x = 1;
 
-        for (int i=0; i<*n_p; i++) {
+        for (size_t i=0; i<*n_p; i++) {
             test[i].y = 0;
             test[i].z = 0;
         }
@@ -30,7 +30,7 @@ Point * get_test(int test_no, int * n_p) {
         test[3].x = 1;
         test[4].x = 4;
 
-        for (int i=0; i<*n_p; i++) {
+        for (size_t i=0; i<*n_p; i++) {
             test[i].y = 0;
             test[i].z = 0;
         }
@@ -46,7 +46,7 @@ Point * get_test(int test_no, int * n_p) {
         test[3].x = 1;
         test[4].x = 4;
 
-        for (int i=0; i<*n_p; i++) {
+        for (size_t i=0; i<*n_p; i++) {
             test[i].y = 0;
             test[i].z = 0;
         }

@@ -12,6 +12,7 @@ enum comp {FAIL, LT, EQ, GT};
 
 int kd_insert(KDTree * tree, Point pt, size_t index);
 KDNode * kd_node_build(Point pt, size_t index);
+int is_point_in_rect_prism(Point pt, Point min_vert, Point max_vert);
 Point pt_build(float x, float y, float z);
 enum comp compare_points(Point pt1, Point pt2, unsigned int dim);
 size_t partition_points(
@@ -148,7 +149,7 @@ size_t kd_cube_query_impl(
     size_t min_index, size_t *indices, size_t * indices_i_p,
     unsigned int dim
 ) {
-    if (node->max_index < min_index) {return 0;}
+    if (!node || node->max_index < min_index) {return 0;}
 
     enum comp min_curr_comp = compare_points(
         *cube_min_p, node->data, dim
@@ -158,34 +159,38 @@ size_t kd_cube_query_impl(
     );
 
     /* if point is outside query range, then, because of how duplicates are
-       handled, there's always a need to check all the way down the subtrees 
-       nearest to the edges of the query cube */
+    handled, there's always a need to check all the way down the subtrees 
+    nearest to the edges of the query cube */
+    unsigned int next_dim = (dim+1) % 3;
     if (min_curr_comp == GT) {
         return kd_cube_query_impl(
             node->right, cube_min_p, cube_max_p,
-            min_index, indices, indices_i_p, dim+1
+            min_index, indices, indices_i_p, next_dim
         );
     } else if (curr_max_comp == GT) {
         return kd_cube_query_impl(
             node->left, cube_min_p, cube_max_p,
-            min_index, indices, indices_i_p, dim+1
+            min_index, indices, indices_i_p, next_dim
         );
     }
 
     /* this endpoint means point falls in range and both subtrees need to be 
        searched */
-
-    if (node->index > min_index) {
+    int point_eligible = (
+        node->index >= min_index 
+        && is_point_in_rect_prism(node->data, *cube_min_p, *cube_max_p)
+    );
+    if (point_eligible) {
         indices[*indices_i_p] = node->index;
-        indices_i_p++;
+        (*indices_i_p)++;
     }
 
-    return 1 + kd_cube_query_impl(
+    return point_eligible + kd_cube_query_impl(
         node->left, cube_min_p, cube_max_p, 
-        min_index, indices, indices_i_p, dim+1
+        min_index, indices, indices_i_p, next_dim
     ) + kd_cube_query_impl(
         node->right, cube_min_p, cube_max_p, 
-        min_index, indices, indices_i_p, dim+1
+        min_index, indices, indices_i_p, next_dim
     );
 }
 
@@ -252,6 +257,17 @@ KDNode * kd_node_build(Point pt, size_t index) {
     out->right = NULL;
 
     return out;
+}
+
+int is_point_in_rect_prism(Point pt, Point min_vert, Point max_vert) {
+    return (
+        compare_points(pt, min_vert, 0) != LT
+        && compare_points(pt, min_vert, 1) != LT
+        && compare_points(pt, min_vert, 2) != LT
+        && compare_points(pt, max_vert, 0) != GT
+        && compare_points(pt, max_vert, 1) != GT
+        && compare_points(pt, max_vert, 2) != GT
+    );
 }
 
 Point pt_build(float x, float y, float z) {

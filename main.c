@@ -9,6 +9,7 @@ can be tested. The submission requires a4_api.h.
 #include <stdio.h>
 #include "tests/partition.h"
 #include "tests/treebuild.h"
+#include "tests/cubequery.h"
 
 int main() {
     freopen("log/out.txt", "a", stdout);
@@ -25,6 +26,8 @@ int main() {
     qselect_easy_test(0);
 
     test_kd_build(3);
+
+    test_kd_cube_query(3);
 
     printf("###    END TEST    ###\n");
 }

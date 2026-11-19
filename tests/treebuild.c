@@ -5,7 +5,7 @@ int _check_tree(KDTree * tree, int test_no, Point * test_pts);
 int test_kd_build(int test_no) {
     printf("test kd build:\n");
     printf("test_no=%d\n\n", test_no);
-    int n;
+    size_t n;
     int result = 1;
     Point * test_pts = get_test(test_no, &n);
     if (!test_pts) {return 0;}

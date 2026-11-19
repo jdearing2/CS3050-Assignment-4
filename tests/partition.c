@@ -2,14 +2,14 @@
 
 enum comp {FAIL, LT, EQ, GT};
 
-int qselect_easy_test_impl(int test_no, int * n_p, int k);
+int qselect_easy_test_impl(int test_no, size_t * n_p, size_t k);
 
 int qselect_easy_test(int test_no) {
     int trial_result = 0;
     int test_result = 1;
 
-    int i = 0;
-    int n = 0;
+    size_t i = 0;
+    size_t n = 0;
 
     printf("test qselect:\n");
 
@@ -17,7 +17,7 @@ int qselect_easy_test(int test_no) {
        in the qselect_easy_test_impl */
     do {
         trial_result = qselect_easy_test_impl(test_no, &n, i);
-        printf("test %d - %d\n\n", i, trial_result);
+        printf("test %lu - %d\n\n", i, trial_result);
         test_result &= trial_result;
         i++;
     } while (i<n);
@@ -28,7 +28,7 @@ int qselect_easy_test(int test_no) {
 }
 
 // results verification test takes O(n) time
-int qselect_easy_test_impl(int test_no, int * n_p, int k) {
+int qselect_easy_test_impl(int test_no, size_t * n_p, size_t k) {
     Point * test_pts = get_test(test_no, n_p);
     Point curr_point;
 
@@ -45,7 +45,7 @@ int qselect_easy_test_impl(int test_no, int * n_p, int k) {
     }
         
     enum comp out;
-    for (int i=k; i<*n_p; i++) {
+    for (size_t i=k; i<*n_p; i++) {
         out = compare_points(test_pts[i], curr_point, 0);
         test_passed &= (out == EQ || out == GT);
     }
@@ -56,7 +56,7 @@ int qselect_easy_test_impl(int test_no, int * n_p, int k) {
 
 void show_partition(int test_no) {
     printf("test partition:\n");
-    int n;
+    size_t n;
     Point * test = get_test(test_no, &n);
 
     print_all_with_dim(test, n, 0);
@@ -69,7 +69,7 @@ void show_partition(int test_no) {
 
 void show_set_pivot(int test_no) {
     printf("test set pivot:\n");
-    int n;
+    size_t n;
     Point * test = get_test(test_no, &n);
     print_all_with_dim(test, n, 0);
     set_partition_pivot_to_last(test, 0, n-1, 0);
