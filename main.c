@@ -10,6 +10,7 @@ can be tested. The submission requires a4_api.h.
 #include "tests/partition.h"
 #include "tests/treebuild.h"
 #include "tests/cubequery.h"
+#include "tests/test_graph_stats.h"
 
 int main() {
     freopen("log/out.txt", "a", stdout);
@@ -29,6 +30,8 @@ int main() {
 
     test_kd_cube_query(3);
     test_kd_cube_query(4);
+
+    run_graph_stats_tests();
 
     printf("###    END TEST    ###\n");
 }

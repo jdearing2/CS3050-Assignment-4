@@ -208,7 +208,81 @@ void kd_free_impl(KDNode *node) {
     kd_free_impl(node->right);
     free(node);
 }
-    
+
+/* graph_stats is an AI assistance permitted function; AI assistance 
+   is used for this function only */
+GraphStats graph_stats(const Point *points, size_t n, double r) {
+    GraphStats stats = {0, 1};
+
+    /* zero or one point: no edges possible, trivially connected */
+    if (!points || n <= 1) {
+        return stats;
+    }
+
+    KDTree *tree = kd_build(points, n);
+    size_t *indices = malloc(sizeof(size_t) * n);
+    size_t *parent = malloc(sizeof(size_t) * n);
+
+    if (!tree || !indices || !parent) {
+        kd_free(tree);   /* kd_free handles NULL */
+        free(indices);
+        free(parent);
+        stats.connected = 0;
+        return stats;
+    }
+
+    /* union-find, used to determine connectivity as edges are found */
+    for (size_t i = 0; i < n; i++) {
+        parent[i] = i;
+    }
+    size_t components = n;
+    double r_sq = r * r;
+
+    for (size_t i = 0; i + 1 < n; i++) {
+        /* min_index = i+1 means each pair is only considered once */
+        size_t found = kd_cube_query(tree, points[i], r, i + 1, indices);
+
+        for (size_t k = 0; k < found; k++) {
+            size_t j = indices[k];
+
+            /* the cube is a superset of the sphere, so verify with
+               euclidean distance (squared, to avoid sqrt) */
+            double dx = points[i].x - points[j].x;
+            double dy = points[i].y - points[j].y;
+            double dz = points[i].z - points[j].z;
+            if (dx * dx + dy * dy + dz * dz > r_sq) {
+                continue;
+            }
+
+            stats.edges++;
+
+            /* find roots with path halving */
+            size_t a = i;
+            while (parent[a] != a) {
+                parent[a] = parent[parent[a]];
+                a = parent[a];
+            }
+            size_t b = j;
+            while (parent[b] != b) {
+                parent[b] = parent[parent[b]];
+                b = parent[b];
+            }
+
+            if (a != b) {
+                parent[a] = b;
+                components--;
+            }
+        }
+    }
+
+    stats.connected = (components == 1);
+
+    kd_free(tree);
+    free(indices);
+    free(parent);
+    return stats;
+}
+
 // implementation functions
     
 int kd_insert(KDTree * tree, Point pt, size_t index) {

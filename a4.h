@@ -47,6 +47,8 @@ size_t kd_cube_query(
 
 void kd_free(KDTree *tree);
 
+GraphStats graph_stats(const Point *points, size_t n, double r);
+
 // implementation functions
 
 Point pt_build(double x, double y, double z);
