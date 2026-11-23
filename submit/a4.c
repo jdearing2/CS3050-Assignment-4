@@ -482,7 +482,7 @@ Point quick_select_k_point(
 /*
 The next several functions are copies of the above functions using the
 MetaPoint struct. This is to allow the kd builder to see the original 
-index of any given point, so the additional 
+index of any given point
 */
 
 /* takes the last point of a section of an array and rearranges such 
