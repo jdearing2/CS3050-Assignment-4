@@ -1,4 +1,3 @@
 *temp*
-a.out
-err.txt
-out.txt
+bin/*
+log/*

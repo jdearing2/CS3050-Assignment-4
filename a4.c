@@ -1,14 +1,29 @@
-
 #include "a4.h"
 
 #include <stdlib.h>
 
 enum comp {FAIL, LT, EQ, GT};
 
+/* original code for a k-d tree - not AI assisted in any way */
+
 // typedef struct _MetaPoint {
 //     size_t index;
 //     Point data;
 // } MetaPoint;
+
+// typedef struct _KDNode {
+//     Point data;
+//     struct _KDNode * left;
+//     struct _KDNode * right;
+
+//     size_t index;
+//     size_t max_index;
+// } KDNode;
+
+// struct KDTree {
+//     size_t size;
+//     KDNode * root;
+// };
 
 int kd_insert(KDTree * tree, Point pt, size_t index);
 KDNode * kd_node_build(Point pt, size_t index);
@@ -52,23 +67,9 @@ void meta_set_partition_pivot_to_last(
     unsigned int dim
 );
 
-/* original code for a k-d tree - not AI assisted in any way */
-
-// typedef struct _KDNode {
-//     Point data;
-//     struct _KDNode * left;
-//     struct _KDNode * right;
-
-//     size_t index;
-//     size_t min_index;
-// } KDNode;
-
-// typedef struct KDTree {
-//     size_t size;
-//     KDNode * root;
-// } KDTree;
-
-void kd_build_impl(KDTree * tree, MetaPoint * points, size_t n, unsigned int dim);
+void kd_build_impl(
+    KDTree * tree, MetaPoint * points, size_t n, unsigned int dim
+);
 
 KDTree *kd_build(const Point *points, size_t n) {
     if (!points || n == 0) {return NULL;}
@@ -93,7 +94,9 @@ KDTree *kd_build(const Point *points, size_t n) {
     return tree;
 }
 
-void kd_build_impl(KDTree * tree, MetaPoint * points, size_t n, unsigned int dim) {
+void kd_build_impl(
+    KDTree * tree, MetaPoint * points, size_t n, unsigned int dim
+) {
     /* does not guard against NULL inputs because functions that call
     this one already handle that */
     if (n == 0) {return;}
@@ -114,7 +117,8 @@ size_t kd_cube_query_impl(
     unsigned int dim
 );
 
-/* operates in O(log(n) + k) time, where k is the number of retrieved keys */
+/* operates in O(log(n) + k) time, where k is the number of retrieved 
+   keys */
 size_t kd_cube_query(
     const KDTree *tree, 
     Point center, 
@@ -158,9 +162,9 @@ size_t kd_cube_query_impl(
         node->data, *cube_max_p, dim
     );
 
-    /* if point is outside query range, then, because of how duplicates are
-    handled, there's always a need to check all the way down the subtrees 
-    nearest to the edges of the query cube */
+    /* if point is outside query range, then, because of how duplicates 
+       are handled, there's always a need to check all the way down the 
+       subtrees nearest to the edges of the query cube */
     unsigned int next_dim = (dim+1) % 3;
     if (min_curr_comp == GT) {
         return kd_cube_query_impl(
@@ -174,8 +178,8 @@ size_t kd_cube_query_impl(
         );
     }
 
-    /* this endpoint means point falls in range and both subtrees need to be 
-       searched */
+    /* this endpoint means point falls in range and both subtrees need 
+       to be searched */
     int point_eligible = (
         node->index >= min_index 
         && is_point_in_rect_prism(node->data, *cube_min_p, *cube_max_p)
@@ -564,7 +568,7 @@ void meta_set_partition_pivot_to_last(
 
 /* copy of quick_select_k_point, except with the MetaPoint struct this
    is meant for the build process, which requires the builder to know 
-   what index each point was originally stored at*/
+   what index each point was originally stored at */
 MetaPoint quick_select_k_meta_point(
     MetaPoint * points, size_t n, unsigned int k, unsigned int dim
 ) {

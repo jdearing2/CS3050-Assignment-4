@@ -4,7 +4,6 @@ This is used for testing and has all functions I may need to test
 #ifndef A4_H
 #define A4_H
 
-#include <stdlib.h>
 #include <stdio.h>
 #include <stddef.h>
 
