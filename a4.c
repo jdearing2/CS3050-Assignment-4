@@ -78,6 +78,7 @@ KDTree *kd_build(const Point *points, size_t n) {
     if (!tree) {return NULL;}
     
     tree->size = n;
+    tree->root = NULL;
     
     /* copies points so array order can be adjusted for k-d tree 
     construction without affecting user's order */
@@ -387,20 +388,16 @@ enum comp compare_points(Point pt1, Point pt2, unsigned int dim) {
 /* takes the last point of a section of an array and rearranges such 
    that, for that section, all points left of that element are less 
    than it and all points right are greater than it and returns its 
-   new index
-
-   note: does not verify points is not null, assumes caller will
-   check 
-
-   TODO:
-   this uses lomuto's scheme, when optimizing I may switch to hoare's
-   */
+   new index */
 size_t partition_points(
     Point * points, 
     size_t first, 
     size_t last, 
     unsigned int dim
 ) {
+    /* doesn't check points not null, internal function assumes 
+    checked by caller */
+    
     // selects based on first, middle, and last point's median
     set_partition_pivot_to_last(
         points, first, last, dim
@@ -460,7 +457,7 @@ void set_partition_pivot_to_last(
 
 /* finds k+1 th smallest element and modifies given array of Points
 such that all points left of said element are less than that element
-and all points right are greater than that element*/
+and all points right are greater than that element */
 Point quick_select_k_point(
     Point * points, size_t n, unsigned int k, unsigned int dim
 ) {
@@ -489,20 +486,16 @@ index of any given point, so the additional
 /* takes the last point of a section of an array and rearranges such 
    that, for that section, all points left of that element are less 
    than it and all points right are greater than it and returns its 
-   new index
-
-   note: does not verify points is not null, assumes caller will
-   check 
-
-   TODO:
-   this uses lomuto's scheme, when optimizing I may switch to hoare's
-   */
+   new index */
 size_t partition_meta_points(
     MetaPoint * points, 
     size_t first, 
     size_t last, 
     unsigned int dim
 ) {
+    /* doesn't check points not null, internal function assumes 
+    checked by caller */
+
     // selects based on first, middle, and last point's median
     meta_set_partition_pivot_to_last(
         points, first, last, dim
